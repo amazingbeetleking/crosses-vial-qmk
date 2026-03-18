@@ -138,8 +138,17 @@ static bool scroll_toggled = false;
 
 bool process_record_user(uint16_t keycode, keyrecord_t* record) {
 
-    // ── One-shot скролл: любая клавиша выключает режим, не срабатывая ──
+    // ── One-shot скролл: любая клавиша выключает режим, кроме Ctrl ──
     if (scroll_toggled && record->event.pressed) {
+        bool is_ctrl = (keycode == KC_LCTL || keycode == KC_RCTL);
+        if (!is_ctrl && IS_QK_MOD_TAP(keycode)) {
+            is_ctrl = (QK_MOD_TAP_GET_MODS(keycode) & MOD_MASK_CTRL);
+        }
+
+        if (is_ctrl) {
+            return true;
+        }
+
         set_scrolling  = false;
         scroll_toggled = false;
         return false;
