@@ -134,7 +134,17 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 // clang-format on
 
+static bool scroll_toggled = false;
+
 bool process_record_user(uint16_t keycode, keyrecord_t* record) {
+
+    // ── One-shot скролл: любая клавиша выключает режим, не срабатывая ──
+    if (scroll_toggled && record->event.pressed) {
+        set_scrolling  = false;
+        scroll_toggled = false;
+        return false;
+    }
+
     switch (keycode) {
         case RSFT_T(KC_LBRC):
             if (record->tap.count && record->event.pressed) {
@@ -149,44 +159,43 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
                 return false;
             }
             break;
+
         case C_MINC:
             if (record->event.pressed) {
                 change_pointer_dpi(&global_user_config, true);
                 debug_config_to_console(&global_user_config);
-
                 return false;
             }
             break;
+
         case C_MDEC:
             if (record->event.pressed) {
                 change_pointer_dpi(&global_user_config, false);
                 debug_config_to_console(&global_user_config);
-
                 return false;
             }
             break;
+
         case C_MTOGG:
             if (record->event.pressed) {
                 bool current_state = get_auto_mouse_enable();
                 set_auto_mouse_enable(!current_state);
-
                 return false;
             }
             break;
-        // Кнопка-TOGGLE
+
+        // Кнопка-ONE-SHOT: включает скролл, выключается любой следующей клавишей
         case C_DRAG:
             if (record->event.pressed) {
-                set_scrolling = !set_scrolling;
-                return true;
+                set_scrolling  = true;
+                scroll_toggled = true;
             }
-            break;
+            return false;
 
-        // Кнопка-HOLD
+        // Кнопка-HOLD: скролл пока зажата
         case C_DRAG_HOLD:
             set_scrolling = record->event.pressed;
             return true;
-    break;
-
     }
 
     return true;
@@ -216,7 +225,6 @@ static void render_splash(void) {
     static uint16_t step           = 0;
 
     if (!initialized) {
-        // Первый кадр — весь экран белый
         for (uint16_t i = 0; i < 512; i++) {
             oled_write_raw_byte(0xFF, i);
         }
@@ -225,7 +233,6 @@ static void render_splash(void) {
         return;
     }
 
-    // Постепенно убираем пиксели
     if (timer_elapsed(fade_timer) > 30) {
         fade_timer = timer_read();
 
@@ -236,13 +243,11 @@ static void render_splash(void) {
         }
     }
 
-    // Надпись поверх
     oled_set_cursor(3, 1);
     oled_write_P(PSTR("CROSSES 3x5"), false);
 }
 
 bool oled_task_user(void) {
-    // Заставка при запуске
     if (!splash_done) {
         if (timer_elapsed32(splash_timer) < SPLASH_DURATION) {
             render_splash();
@@ -253,10 +258,8 @@ bool oled_task_user(void) {
         }
     }
 
-    // Bongocat
     render_bongocat();
 
-    // Текст
     uint8_t col = is_keyboard_left() ? 17 : 0;
 
     const char* layer_names[] = {
