@@ -9,6 +9,10 @@
 #define VIAL_UNLOCK_COMBO_COLS {0, 0}
 #define VIAL_UNLOCK_COMBO_ROWS {0, 4}
 
+// Исправление зависания slave при холодном старте
+#define SPLIT_WATCHDOG_ENABLE
+#define SPLIT_WATCHDOG_TIMEOUT 3000
+
 /* Miryoku */
 #define BILATERAL_COMBINATIONS
 #define BILATERAL_COMBINATIONS_LIMIT_CHORD_TO_N_KEYS 4 /* GUI, Alt, Ctrl, Shift */
