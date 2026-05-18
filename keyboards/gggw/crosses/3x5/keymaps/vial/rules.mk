@@ -4,3 +4,4 @@ VIA_ENABLE = yes
 VIAL_ENABLE = yes
 DEFERRED_EXEC_ENABLE = yes
 SRC += oled-bongocat.c
+DYNAMIC_MACRO_ENABLE = yes
